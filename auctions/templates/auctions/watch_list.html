@@ -1,0 +1,19 @@
+{% extends 'auctions/layout.html' %} 
+{% block body %} 
+
+<h1>Watch List</h1>
+{% for watch_list in watch_lists %}
+
+<div class="flex">
+  <a href="{% url 'listing' watch_list.listing.id %}">
+  <h2>{{watch_list.listing.title}}</h2>
+    <img src="{{watch_list.listing.image}}" alt="{{watch_list.listing.name}}" />
+    <p>{{watch_list.listing.description}}</p>
+    <p>{{watch_list.listing.starting_bid}}</p>
+    <p>{{watch_list.listing.created_at}}</p>
+  </a>
+  </div>
+{% endfor %} 
+
+
+{% endblock %}

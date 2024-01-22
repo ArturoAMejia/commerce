@@ -1,14 +1,63 @@
 {% extends 'auctions/layout.html' %} 
 
 {% block body %}
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-danger" role="alert">
+        {{message}}
+      </div>
+  {% endfor %}
+{% endif %}
 
-<h2>{{listing.title}}</h2>
+<h2>Listing: {{listing.title}}</h2>
+{% if watch_list %}
+<form action="{% url 'watch_list' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="listing_id" id="" value="{{listing.id}}">
+  <button type="submit">
+    <span class="badge text-bg-secondary">Delete from Watchlist</span>
+
+    </button>
+</form>
+
+{% else %}
+<form action="{% url 'watch_list' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="listing_id" id="" value="{{listing.id}}">
+  <button type="submit">
+    <span class="badge text-bg-secondary">Watchlist</span>
+
+    </button>
+</form>
+{% endif %}
 <img src="{{listing.image}}" alt="{{listing.name}}" />
 <p>{{listing.description}}</p>
-<p>{{listing.starting_bid}}</p>
+<p>Price: {{listing_bid.bid}}</p>
+
+
+
+<p>
+  {{bid_count}} bid(s) so far. 
+  {% if listing_bid.user == request.user %}
+  Your bid is the current bid.
+  {% endif %}
+</p>
+
+<form action="{% url 'listing' listing.id %}" method="POST">
+  {% csrf_token %}
+  <input type="number" name="bid" placeholder="Bid" class="form-control">
+  <button class="btn btn-primary my-2" type="submit">Place bid</button>
+</form>
 
 <h3>Details</h3>
-<p>Listed by: {{listing.user.username}}</p>
-<p>Category: {{listing.category.name}}</p>
+<ul>
+  <li>
+    Listed by: {{listing.user.username}}
+  </li>
+  <li>
+    Category: {{listing.category.name}}
+  </li>
+</ul>
+
 
 {% endblock %}
