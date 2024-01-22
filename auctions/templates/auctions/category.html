@@ -1,20 +1,19 @@
-{% extends 'auctions/layout.html' %} {% block body %}
-<form action="{% url 'category' %}" method="post">
-  {% csrf_token %}
+{% extends 'auctions/layout.html' %} 
+{% block body %} 
 
-  <label for="name">Name</label>
-  <input type="text" name="name" id="" />
+<h1>Active Listings</h1>
+{% for listing in listings %}
 
-  <button type="submit">Create</button>
-</form>
+<div class="flex">
+  <a href="{% url 'listing' listing.id %}">
+  <h2>{{listing.title}}</h2>
+    <img src="{{listing.image}}" alt="{{listing.name}}" />
+    <p>{{listing.description}}</p>
+    <p>{{listing.starting_bid}}</p>
+    <p>{{listing.created_at}}</p>
+  </a>
+  </div>
+{% endfor %} 
 
-<h2>Categories</h2>
-
-<ul>
-  {% for category in categories %}
-  <li>{{ category.name }}</li>
-  {% endfor %}
-  
-</ul>
 
 {% endblock %}

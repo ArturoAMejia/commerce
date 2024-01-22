@@ -3,8 +3,9 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from .models import Category, Listing, ListingBid, User, WatchList
+from .models import Category, Listing, ListingBid, ListingComment, User, WatchList
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 
 def index(request):
@@ -67,7 +68,8 @@ def register(request):
         return render(request, "auctions/register.html")
 
 
-def category(request):
+@login_required()
+def categories(request):
 
     if request.method == 'POST':
 
@@ -80,11 +82,21 @@ def category(request):
 
     else:
         categories = Category.objects.all()
-        return render(request, 'auctions/category.html', {
+        return render(request, 'auctions/categories.html', {
             "categories": categories
         })
     
 
+@login_required()
+def category(request, id):
+
+    listings = Listing.objects.all().filter(category_id=id, state=True)
+    return render(request, 'auctions/category.html', {
+        "listings": listings
+    })
+    
+
+@login_required()
 def listing(request, id):
     if request.method == "POST":
         bid = request.POST["bid"]
@@ -106,17 +118,21 @@ def listing(request, id):
     else:
         listing = Listing.objects.get(id=id)
         listing_bid = ListingBid.objects.get(listing=listing, state=True)
+        
         bid_count = ListingBid.objects.filter(listing_id=id).count()
         watch_list = WatchList.objects.filter(listing_id=id, user=request.user)
-        print(watch_list)
+
+        comments = ListingComment.objects.filter(listing_id=id)
         return render(request, 'auctions/listing.html', {
                 'listing': listing,
                 'listing_bid': listing_bid,
                 'bid_count': bid_count,
-                'watch_list':watch_list
+                'watch_list':watch_list,
+                'comments': comments
         })
 
 
+@login_required()
 def create_listing(request):
 
     if request.method == 'POST':
@@ -143,6 +159,7 @@ def create_listing(request):
         })
 
 
+@login_required()
 def watch_list(request):
     if request.method == "POST":
         listing_id = request.POST["listing_id"]
@@ -162,4 +179,28 @@ def watch_list(request):
             "watch_lists": watch_lists
         })
 
+
+def close_listing(request):
+    if request.method == "POST":
+        listing_id = request.POST["listing_id"]
+        listing = Listing.objects.get(id=listing_id)
+
+        listing.state = False
+        listing.save()
+        return HttpResponseRedirect(reverse("index"))
+    else:
+        return HttpResponseRedirect(reverse("index"))
+
+
+def comment(request):
+    if request.method == "POST":
+        listing_id = request.POST["listing_id"]
+        comment = request.POST["comment"]
+
+        listing = Listing.objects.get(id=listing_id)
+        c = ListingComment(user=request.user, comment=comment, listing=listing) 
+        c.save()
+        return HttpResponseRedirect(reverse("index"))
+    else:
+        return HttpResponseRedirect(reverse("index"))
 

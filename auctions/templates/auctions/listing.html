@@ -9,7 +9,32 @@
   {% endfor %}
 {% endif %}
 
-<h2>Listing: {{listing.title}}</h2>
+<div class="d-flex justify-content-between">
+
+  
+  <h2>Listing: {{listing.title}}</h2>
+  
+  {% if listing.user == request.user and listing.state == True %}
+<form action="{% url 'close_listing' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="listing_id" id="" value="{{listing.id}}">
+  <button type="submit">
+    <span class="badge text-bg-secondary">Close Auction</span>
+    
+  </button>
+</form>
+{% endif %}
+</div>
+
+{% if listing.state == False %}
+<h3>Auction is closed</h3>
+{% endif %}
+
+{% if listing_bid.user == request.user and listing.state == False %}
+<h3>You won the auction</h3>
+{% endif %}
+
+
 {% if watch_list %}
 <form action="{% url 'watch_list' %}" method="post">
   {% csrf_token %}
@@ -43,11 +68,13 @@
   {% endif %}
 </p>
 
-<form action="{% url 'listing' listing.id %}" method="POST">
-  {% csrf_token %}
-  <input type="number" name="bid" placeholder="Bid" class="form-control">
-  <button class="btn btn-primary my-2" type="submit">Place bid</button>
-</form>
+{% if listing.state == True %}
+  <form action="{% url 'listing' listing.id %}" method="POST">
+    {% csrf_token %}
+    <input type="number" name="bid" placeholder="Bid" class="form-control">
+    <button class="btn btn-primary my-2" type="submit">Place bid</button>
+  </form>
+{% endif %}
 
 <h3>Details</h3>
 <ul>
@@ -58,6 +85,30 @@
     Category: {{listing.category.name}}
   </li>
 </ul>
+
+
+{% if listing.state == True %}
+<form class="my-4" action="{% url 'comment' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" name="listing_id" id="" value="{{listing.id}}">
+  <label class="form-label" for="comment">Comment</label>
+  <textarea class="form-control" name="comment" id="" cols="30" rows="3"></textarea>
+
+  <button class="btn btn-primary" type="submit">
+    Comment
+  </button>
+</form>
+{% endif %}
+
+<h3>Comments:</h3>
+
+{% for comment in comments %}
+
+<div class="flex">
+  <h4>User: {{comment.user.username}}</h4>
+    <p>{{comment.comment}}</p>
+  </div>
+{% endfor %} 
 
 
 {% endblock %}
