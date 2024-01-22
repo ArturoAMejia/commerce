@@ -4,11 +4,15 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import User
+from .models import Category, Listing, User
 
 
 def index(request):
-    return render(request, "auctions/index.html")
+    listings = Listing.objects.all()
+
+    return render(request, "auctions/index.html", {
+            'listings': listings
+    })
 
 
 def login_view(request):
@@ -61,3 +65,54 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
+
+
+def category(request):
+
+    if request.method == 'POST':
+
+        name = request.POST["name"]
+
+        cat = Category(name=name)
+        cat.save()
+
+        return HttpResponseRedirect(reverse("category"))
+
+    else:
+        categories = Category.objects.all()
+        return render(request, 'auctions/category.html', {
+            "categories": categories
+        })
+    
+
+def listing(request, id):
+    listing = Listing.objects.get(id=id)
+    return render(request, 'auctions/listing.html', {
+            'listing': listing
+    })
+
+
+def create_listing(request):
+
+    if request.method == 'POST':
+        print(request.user)
+        title = request.POST["title"]
+        description = request.POST["description"]
+        starting_bid = request.POST["starting_bid"]
+        image = request.POST["image"]
+        cat = request.POST["category"]
+
+        category = Category.objects.get(id=int(cat))
+
+        listing = Listing(title=title, description=description, starting_bid=starting_bid, image=image, user=request.user, category=category)
+        listing.save()
+
+        return HttpResponseRedirect(reverse("index"))
+
+    else:
+        categories = Category.objects.all()
+        return render(request, 'auctions/create_listing.html', {
+            'categories': categories
+        })
+    
+
